@@ -77,7 +77,9 @@ class PhotosOrganize:
             img = piexif.load(photo)
             shooting_date = self.change_date(img["Exif"][36867].decode())
 
-            if self.check_time(shooting_date):
+            start_check = (shooting_date - self.start_time).days > 0
+            finish_check = (shooting_date - self.finish_time).days < 0
+            if start_check and finish_check:
                 shutil.copy(photo, output_dir)
                 print(f"「{photo}」を画像を「{output_dir}」にコピーしました。")
             else:
@@ -95,23 +97,6 @@ class PhotosOrganize:
         path = pathlib.Path(path)
         if not path.exists():
             path.mkdir()
-
-    def check_time(self, shooting_date: datetime):
-        """
-        指定された日付の範囲内かをチェックする
-
-        args:
-            shooting_date(datetime):撮影日時
-        return:
-            boolean:True/False
-        """
-
-        start_check = (shooting_date - self.start_time).days > 0
-        finish_check = (shooting_date - self.finish_time).days < 0
-        if start_check and finish_check:
-            return True
-
-        return False
 
 
 def main():
