@@ -12,9 +12,9 @@ SONY = "ARW"
 
 
 class PhotosOrganize:
-    def __init__(self, title, input, output):
+    def __init__(self, input, output):
         args = sys.argv
-        if len(args) != 3:
+        if len(args) != 4:
             print("引数を指定してください")
             sys.exit(1)
 
@@ -24,7 +24,7 @@ class PhotosOrganize:
         self.check_directory(output)
 
         # 出力先のディレクトリを作成
-        self.output_path = output + "/" + title
+        self.output_path = output + "/" + args[3]
         self.check_directory(self.output_path)
 
         # 開始日時と終了日時を設定
@@ -72,20 +72,23 @@ class PhotosOrganize:
         # ディレクトリが存在しない場合は作成する
         self.check_directory(output_dir)
 
+        count = 0
         # コピーを実施
         for photo in photo_list:
             img = piexif.load(photo)
             shooting_date = self.change_date(img["Exif"][36867].decode())
 
-            start_check = (shooting_date - self.start_time).days > 0
+            start_check = (shooting_date - self.start_time).days >= 0
             finish_check = (shooting_date - self.finish_time).days < 0
             if start_check and finish_check:
+                count += 1
                 shutil.copy(photo, output_dir)
                 print(f"「{photo}」を「{output_dir}」にコピーしました。")
             else:
-                print(f"「{photo}」は指定された日付の範囲外です。")
+                if count != 0:
+                    break
 
-        print(f"「.{type}」の画像のコピーが完了しました。")
+        print(f"「.{type}」の画像を{count}枚コピーしました。")
 
     def check_directory(self, path):
         """
@@ -101,10 +104,9 @@ class PhotosOrganize:
 
 def main():
     # パスを指定
-    title = "20201204"
     input = ""
     output = ""
-    photo = PhotosOrganize(title, input, output)
+    photo = PhotosOrganize(input, output)
 
     # 拡張子のリスト
     type_list = [JPG, NIKON, SONY]
