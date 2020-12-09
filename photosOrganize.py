@@ -81,7 +81,7 @@ class PhotosOrganize:
             finish_check = (shooting_date - self.finish_time).days < 0
             if start_check and finish_check:
                 shutil.copy(photo, output_dir)
-                print(f"「{photo}」を画像を「{output_dir}」にコピーしました。")
+                print(f"「{photo}」を「{output_dir}」にコピーしました。")
             else:
                 print(f"「{photo}」は指定された日付の範囲外です。")
 
@@ -101,9 +101,9 @@ class PhotosOrganize:
 
 def main():
     # パスを指定
-    title = "フォトウォーク"
-    input = "/Users/pt-shira/Pictures/tmp"
-    output = "/Users/pt-shira/Pictures/output"
+    title = "20201204"
+    input = ""
+    output = ""
     photo = PhotosOrganize(title, input, output)
 
     # 拡張子のリスト
