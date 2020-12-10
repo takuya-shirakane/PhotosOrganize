@@ -25,7 +25,6 @@ class PhotosOrganize:
 
         # 出力先のディレクトリを作成
         self.output_path = output + "/" + args[3]
-        self.check_directory(self.output_path)
 
         # 開始日時と終了日時を設定
         self.date_args = {"year": 0, "month": 1, "day": 2, "hour": 3, "minites": 4}
@@ -67,7 +66,7 @@ class PhotosOrganize:
             print(f"「.{type}」の画像は存在しません。")
             return
 
-        output_dir = self.output_path + "/" + type
+        output_dir = self.output_path + type
 
         # ディレクトリが存在しない場合は作成する
         self.check_directory(output_dir)
@@ -104,8 +103,8 @@ class PhotosOrganize:
 
 def main():
     # パスを指定
-    input = ""
-    output = ""
+    input = "/Users/pt-shira/Pictures/tmp"
+    output = "/Users/pt-shira/Pictures"
     photo = PhotosOrganize(input, output)
 
     # 拡張子のリスト
