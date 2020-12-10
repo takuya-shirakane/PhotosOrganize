@@ -60,7 +60,7 @@ class PhotosOrganize:
             type:拡張子の種類
         """
         # 写真のリストを作成
-        photo_list = glob.glob(self.input_path + "/*." + type)
+        photo_list = sorted(glob.glob(self.input_path + "/*." + type))
 
         if not photo_list:
             print(f"「.{type}」の画像は存在しません。")
