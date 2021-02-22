@@ -6,7 +6,7 @@ import re
 import datetime
 import sys
 
-JPG = "jpg"
+JPG = "JPG"
 NIKON = "NEF"
 SONY = "ARW"
 
