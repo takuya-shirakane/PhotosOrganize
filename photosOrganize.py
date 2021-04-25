@@ -5,17 +5,40 @@ import piexif
 import re
 import datetime
 import sys
+import logging
 
 JPG = "JPG"
 NIKON = "NEF"
 SONY = "ARW"
 
 
+# ストリームハンドラの設定
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(logging.Formatter("%(message)s"))
+
+# 保存先の有無チェック
+log_dir = pathlib.Path("./log")
+if not log_dir.exists():
+    log_dir.mkdir()
+
+# ファイルハンドラの設定
+file_handler = logging.FileHandler("./log/photosOrganize.log")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(
+    logging.Formatter("%(asctime)s@ %(name)s [%(levelname)s] %(funcName)s: %(message)s")
+)
+
+# ルートロガーの設定
+logging.basicConfig(level=logging.INFO, handlers=[stream_handler, file_handler])
+
+logger = logging.getLogger(__name__)
+
+
 class PhotosOrganize:
     def __init__(self, input_dir, output_dir):
         args = sys.argv
         if len(args) != 4:
-            print("引数を指定してください")
+            logger.warning("引数を指定してください")
             sys.exit(1)
 
         self.input_path = input_dir
@@ -45,7 +68,7 @@ class PhotosOrganize:
 
         if len(date_info) < 4:
             # 分割して多い場合は不正のため終了
-            print("日付を正しい形で指定してください。")
+            logger.warning("日付を正しい形で指定してください。")
             sys.exit(1)
 
         # datetime型に変換
@@ -71,7 +94,7 @@ class PhotosOrganize:
             photo_list = sorted(glob.glob(f"{self.input_path}/*.{data_type.lower()}"))
 
         if not photo_list:
-            print(f"「.{data_type}」の画像は存在しません。")
+            logger.info(f"「.{data_type}」の画像は存在しません。")
             return
 
         # ディレクトリが存在しない場合は作成する
@@ -93,12 +116,12 @@ class PhotosOrganize:
                 # 撮影日時が指定した日時内であればコピーを実施
                 count += 1
                 shutil.copy(photo, output_dir)
-                print(f"「{photo}」を「{output_dir}」にコピーしました。")
+                logger.info(f"「{photo}」を「{output_dir}」にコピーしました。")
             elif count != 0:
                 # countが1以上であればループを抜ける
                 break
 
-        print(f"「.{data_type}」の画像を{count}枚コピーしました。")
+        logger.info(f"「.{data_type}」の画像を{count}枚コピーしました。")
 
     def check_directory(self, path):
         """
@@ -128,6 +151,6 @@ def main():
 
 
 if __name__ == "__main__":
-    print("start")
+    logger.info("start")
     main()
-    print("finish")
+    logger.info("finish")
