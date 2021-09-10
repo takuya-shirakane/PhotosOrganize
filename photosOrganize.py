@@ -6,6 +6,8 @@ import re
 import datetime
 import sys
 import logging
+from concurrent.futures.thread import ThreadPoolExecutor
+from concurrent.futures import as_completed
 
 JPG = "JPG"
 NIKON = "NEF"
@@ -54,6 +56,8 @@ class PhotosOrganize:
         self.start_time = self.change_date(args[1])
         self.finish_time = self.change_date(args[2])
 
+        self.count = 0
+
     def change_date(self, date):
         """
         引数で受け取った日時をdatetime型に変更する
@@ -101,27 +105,32 @@ class PhotosOrganize:
         output_dir = self.output_path + data_type
         self.check_directory(output_dir)
 
-        count = 0
+        # スレッド実行を定義
+        futures = []
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            for photo in photo_list:
+                # 写真のデータを取得
+                img = piexif.load(photo)
 
-        for photo in photo_list:
-            # 写真のデータを取得
-            img = piexif.load(photo)
+                # 撮影日時を取得
+                shooting_date = self.change_date(img["Exif"][36867].decode())
 
-            # 撮影日時を取得
-            shooting_date = self.change_date(img["Exif"][36867].decode())
+                start_check = (shooting_date - self.start_time).days >= 0
+                finish_check = (shooting_date - self.finish_time).days < 0
+                if start_check and finish_check:
+                    # 撮影日時が指定した日時内であればコピーを実施
+                    futures.append(executor.submit(self._execute, photo, output_dir))
 
-            start_check = (shooting_date - self.start_time).days >= 0
-            finish_check = (shooting_date - self.finish_time).days < 0
-            if start_check and finish_check:
-                # 撮影日時が指定した日時内であればコピーを実施
-                count += 1
-                shutil.copy(photo, output_dir)
-                logger.info(f"「{photo}」を「{output_dir}」にコピーしました。")
-            elif count != 0:
-                # countが1以上であればループを抜ける
-                break
+            for f in as_completed(futures):
+                f.result()
 
-        logger.info(f"「.{data_type}」の画像を{count}枚コピーしました。")
+        logger.info(f"{data_type}の写真を{self.count}枚コピーしました。")
+        self.count = 0
+
+    def _execute(self, photo, output_dir):
+        shutil.copy(photo, output_dir)
+        self.count += 1
+        logger.info(f"「{photo}」を「{output_dir}」にコピーしました。")
 
     def check_directory(self, path):
         """
